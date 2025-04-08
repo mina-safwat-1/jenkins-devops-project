@@ -1,0 +1,11 @@
+Host bastion
+  HostName 54.166.71.43
+  User ec2-user
+  IdentityFile ~/.ssh/test.pem
+
+Host private-agent
+  HostName 172.31.80.123
+  User ec2-user
+  IdentityFile ~/.ssh/test.pem
+  ProxyJump bastion
+
