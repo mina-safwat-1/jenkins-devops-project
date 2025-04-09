@@ -38,7 +38,7 @@ java -jar agent.jar -url http://52.207.113.142:8080/ -secret 90f28a9f16a40698c9d
 
 port     : process.env.RDS_PORT,
 
-docker run -d -p 80:3000 \
+sudo docker run -d -p 80:3000 \
   -e REDIS_HOSTNAME=free-tier-redis.pippkp.0001.use1.cache.amazonaws.com \
   -e REDIS_PORT=6379 \
   -e RDS_HOSTNAME=free-tier-mysql.c898yew20797.us-east-1.rds.amazonaws.com \
