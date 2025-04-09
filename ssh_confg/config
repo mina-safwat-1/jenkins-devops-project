@@ -8,4 +8,3 @@ Host private-agent
   User ec2-user
   IdentityFile ~/.ssh/test.pem
   ProxyJump bastion
-

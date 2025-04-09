@@ -6,7 +6,7 @@ resource "aws_lb_target_group" "node" {
   target_type = "instance"      # Direct traffic to EC2 instances
 
   health_check {
-    path                = "/worker" # Health check endpoint
+    path                = "/health" # Health check endpoint
     interval            = 30
     healthy_threshold   = 2
     unhealthy_threshold = 2

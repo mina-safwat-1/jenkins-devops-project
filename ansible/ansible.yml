@@ -1,0 +1,19 @@
+---
+- name: Install and configure OpenJDK on Ubuntu
+  hosts: ubuntu_servers
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Create jenkins directory
+      ansible.builtin.file:
+        path: ~/jenkins
+        state: directory
+        
+    - name: Install OpenJDK 17 JDK
+      ansible.builtin.apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
