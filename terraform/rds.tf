@@ -1,75 +1,73 @@
-# # Create DB subnet group
-# resource "aws_db_subnet_group" "rds_subnet_group" {
-#   name = "postgres-subnet-group"
-#   subnet_ids = [
-#     for subnet in var.subnets :
-#     aws_subnet.subnets[subnet.name].id
-#     if subnet.type == "private"
-#   ]
+# Create DB subnet group (no changes needed)
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name = "mysql-subnet-group"
+  subnet_ids = [
+    for subnet in var.subnets :
+    aws_subnet.subnets[subnet.name].id
+    if subnet.type == "private"
+  ]
 
-#   tags = {
-#     Name = "Postgres Subnet Group"
-#   }
-# }
+  tags = {
+    Name = "MySQL Subnet Group"
+  }
+}
 
-# # Create security group for RDS
-# resource "aws_security_group" "rds_sg" {
-#   name        = "postgres-security-group"
-#   description = "Allow access to PostgreSQL"
-#   vpc_id      = aws_vpc.main.id
+# Update security group for MySQL
+resource "aws_security_group" "rds_sg" {
+  name        = "mysql-security-group"
+  description = "Allow access to MySQL"
+  vpc_id      = aws_vpc.main.id
 
-#   ingress {
-#     description = "Allow PostgreSQL access"
-#     from_port   = 5432
-#     to_port     = 5432
-#     protocol    = "tcp"
-#     cidr_blocks = [aws_vpc.main.cidr_block] # Restrict to VPC CIDR
-#   }
+  ingress {
+    description = "Allow MySQL access"
+    from_port   = 3306  # MySQL default port
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]  # Restrict to VPC
+  }
 
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   tags = {
-#     Name = "postgres-security-group"
-#   }
-# }
+  tags = {
+    Name = "mysql-security-group"
+  }
+}
 
-# # Create RDS instance (Free Tier eligible)
-# resource "aws_db_instance" "postgres_rds" {
-#   identifier             = "free-tier-postgres"
-#   engine                 = "postgres"
-#   instance_class         = "db.t3.micro" # Free Tier eligible
-#   allocated_storage      = 20            # Max for Free Tier
-#   storage_type           = "gp2"
-#   db_name                = "postgres" # Default database name
-#   username               = "postgres"     # Default PostgreSQL admin username
-#   password               = var.db_password
-#   skip_final_snapshot    = true
-#   publicly_accessible    = false
-#   vpc_security_group_ids = [aws_security_group.rds_sg.id]
-#   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+# Create MySQL RDS instance (Free Tier eligible)
+resource "aws_db_instance" "mysql_rds" {
+  identifier             = "free-tier-mysql"
+  engine                 = "mysql"
+  engine_version         = "8.0"          # Latest stable version
+  instance_class         = "db.t3.micro"  # Free Tier eligible
+  allocated_storage      = 20             # Max for Free Tier (GB)
+  storage_type           = "gp2"
+  db_name                = "mydatabase"   # Replace with your DB name
+  username               = "admin"        # Replace with your username
+  password               = var.db_password
+  skip_final_snapshot    = true           # For dev (set to false in prod)
+  publicly_accessible    = false
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
 
-#   # Free Tier appropriate settings
-#   backup_retention_period = 0 # Disable automatic backups to stay within Free Tier
-#   maintenance_window      = "Mon:00:00-Mon:03:00"
-#   deletion_protection     = false # Disable for easier cleanup (enable for production)
+  # Free Tier optimizations
+  backup_retention_period = 0      # Disable backups (Free Tier limit: 1 snapshot)
+  maintenance_window      = "Mon:00:00-Mon:03:00"
+  deletion_protection     = false  # Disable for easier cleanup
 
+  # Optional: Enable storage autoscaling (not Free Tier eligible)
+  # max_allocated_storage = 100
 
-#   # ca_cert_identifier     = "rds-ca-rsa2048-g1"  # Default CA until 2061
+  tags = {
+    Environment = "dev"
+  }
+}
 
-
-#   tags = {
-#     Environment = "dev"
-#   }
-# }
-
-# # Output the RDS endpoint
-# output "postgres_endpoint" {
-#   value = aws_db_instance.postgres_rds.endpoint
-# }
-
-
+# Output the MySQL endpoint
+output "mysql_endpoint" {
+  value = aws_db_instance.mysql_rds.endpoint
+}

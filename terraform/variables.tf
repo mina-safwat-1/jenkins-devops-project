@@ -27,8 +27,11 @@ variable "vote_ami" {
 
 
 # Variables
+
 variable "db_password" {
-  description = "PostgreSQL admin password"
-  type        = string
-  sensitive   = true
+
+  type = string
+  sensitive = true
+  default = "admin"
+  
 }

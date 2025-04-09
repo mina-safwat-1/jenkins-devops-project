@@ -127,6 +127,13 @@
         name: terraform
         state: present
 
+    - name: Install Ansible (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name: ansible
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+
+
     # Verify installations (optional)
     - name: Verify Java installation
       ansible.builtin.command: java -version
@@ -151,6 +158,12 @@
       register: terraform_version
       changed_when: false
       ignore_errors: yes
+
+
+    - name: Verify Ansible installation
+      ansible.builtin.command: ansible --version
+      register: ansible_version
+      changed_when: false
 
     - name: Show installation versions
       ansible.builtin.debug:

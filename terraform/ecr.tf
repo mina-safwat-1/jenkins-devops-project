@@ -42,17 +42,21 @@ resource "aws_iam_role_policy" "ecr_pull_policy" {
         Effect = "Allow",
         Action = [
           "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
           "ecr:GetRepositoryPolicy",
           "ecr:DescribeRepositories",
           "ecr:ListImages",
-          "ecr:DescribeImages",
           "ecr:BatchGetImage",
           "ecr:GetLifecyclePolicy",
           "ecr:GetLifecyclePolicyPreview",
           "ecr:ListTagsForResource",
-          "ecr:DescribeImageScanFindings"
+          "ecr:DescribeImageScanFindings",
+          "ecr:UploadLayerPart",
+          "ecr:InitiateLayerUpload",
+          "ecr:CompleteLayerUpload",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:PutImage"
+
         ],
         Resource = "*"
       },

@@ -4,7 +4,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-amd64-server-*"]
   }
 
   filter {
@@ -12,13 +12,13 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 
-  owners = ["099720109477"] # Canonical's AWS account ID
+  owners = ["099720109477"] # Canonical
 }
 
 
 # EC2 Instances
 resource "aws_instance" "bastion" {
-  ami                         = aws_ami.ubuntu.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t2.micro"
   subnet_id                   = [
     for subnet in var.subnets :
@@ -36,7 +36,7 @@ resource "aws_instance" "bastion" {
 }
 
 resource "aws_instance" "node_app" {
-  ami                         = aws_ami.ubuntu.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type          = "t2.micro"
 
   subnet_id              = [
@@ -47,7 +47,7 @@ resource "aws_instance" "node_app" {
 
   vpc_security_group_ids = [aws_security_group.private_sg.id]
   key_name               = "new" # Replace with your key pair
-  iam_instance_profile = aws_iam_instance_profile.node_app_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ecr_access_profile.name
 
   tags = {
     Name = "node_app"
@@ -55,7 +55,7 @@ resource "aws_instance" "node_app" {
 }
 
 resource "aws_instance" "jenkins_slave" {
-  ami                         = aws_ami.ubuntu.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type          = "t2.micro"
   subnet_id              = [
     for subnet in var.subnets :
@@ -65,7 +65,7 @@ resource "aws_instance" "jenkins_slave" {
 
   vpc_security_group_ids = [aws_security_group.private_sg.id]
   key_name               = "new" # Replace with your key pair
-  iam_instance_profile = aws_iam_instance_profile.node_app_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ecr_access_profile.name
 
   tags = {
     Name = "jenkins_slave"

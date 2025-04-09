@@ -8,7 +8,7 @@ terraform {
 
 
   backend "s3" {
-    bucket       = "voting-app-pipeline-state"
+    bucket       = "terraform-states-bucket-1"
     region       = "us-east-1"
     key          = "jenkins_porject_terraform.tfstate"
     use_lockfile = true
