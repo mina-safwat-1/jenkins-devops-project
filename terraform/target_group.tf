@@ -1,5 +1,5 @@
 resource "aws_lb_target_group" "node" {
-  name        = "worker-tg"
+  name        = "node-tg"
   port        = 80 # Port your instances listen on (e.g., HTTP)
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id # Replace with your VPC ID if needed
@@ -11,6 +11,6 @@ resource "aws_lb_target_group" "node" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
     timeout             = 5
-    matcher             = "200-499"
+    matcher             = "200-399"
   }
 }

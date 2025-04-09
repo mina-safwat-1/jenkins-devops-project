@@ -1,10 +1,16 @@
 Host bastion
   HostName 54.166.71.43
-  User ec2-user
+  User ubuntu
   IdentityFile ~/.ssh/test.pem
 
-Host private-agent
+Host ansible-slave
   HostName 172.31.80.123
-  User ec2-user
+  User ubuntu
+  IdentityFile ~/.ssh/test.pem
+  ProxyJump bastion
+
+Host node-app
+  HostName 172.31.80.123
+  User ubuntu
   IdentityFile ~/.ssh/test.pem
   ProxyJump bastion
