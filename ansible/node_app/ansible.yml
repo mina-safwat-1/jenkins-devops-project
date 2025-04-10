@@ -78,9 +78,9 @@
         remote_src: yes
 
     - name: Install AWS CLI
-      ansible.builtin.command: /tmp/aws/install
-      args:
-        creates: /usr/local/bin/aws
+      ansible.builtin.command:
+        cmd: /tmp/aws/install
+        creates: /usr/local/bin/aws  # Corrected: 'creates' as a module parameter
 
 
     - name: Clean up AWS CLI installation files
@@ -112,14 +112,14 @@
       register: pull_result
       changed_when: "'Downloaded newer image' in pull_result.stdout"
 
-- name: Run the container
-  command: >
-    sudo docker run -d --name nodeapp -p 80:3000
-    -e REDIS_HOSTNAME={{ REDIS_HOSTNAME }}
-    -e REDIS_PORT=6379
-    -e RDS_HOSTNAME={{ RDS_HOSTNAME }}
-    -e RDS_USERNAME={{ RDS_USERNAME }}
-    -e RDS_PASSWORD={{ RDS_PASSWORD }}
-    -e RDS_PORT=3306
-    {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE_TAG }}
-  when: pull_result is changed or stop_container is changed or remove_container is changed
+    - name: Run the container
+      command: >
+        sudo docker run -d --name nodeapp -p 80:3000
+        -e REDIS_HOSTNAME={{ REDIS_HOSTNAME }}
+        -e REDIS_PORT=6379
+        -e RDS_HOSTNAME={{ RDS_HOSTNAME }}
+        -e RDS_USERNAME={{ RDS_USERNAME }}
+        -e RDS_PASSWORD={{ RDS_PASSWORD }}
+        -e RDS_PORT=3306
+        {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE_TAG }}
+      when: pull_result is changed or stop_container is changed or remove_container is changed
