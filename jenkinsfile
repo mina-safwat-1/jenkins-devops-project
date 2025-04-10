@@ -57,34 +57,35 @@ pipeline {
 
         stage('Get ECR URL and Repo Name') {
             steps {
+                dir('terraform') {  // Changes directory to terraform/
                 script {
                     // Fetch ECR repository URL from Terraform output
                     REGISTRY = sh(
-                        script: 'terraform -chdir=./terraform output -raw aws_ecr_repository | cut -d'.' -f1',
+                        script: 'terraform  output -raw aws_ecr_repository | cut -d'.' -f1',
                         returnStdout: true
                     ).trim()
                     
                     // Fetch ECR repository name from Terraform output
                     REPOSITORY = sh(
-                        script: 'terraform -chdir=./terraform output -raw aws_ecr_repository | cut -d'.' -f2',
+                        script: 'terraform  output -raw aws_ecr_repository | cut -d'.' -f2',
                         returnStdout: true
                     ).trim()
 
 
                     REDIS_HOSTNAME = sh(
-                        script: 'terraform -chdir=./terraform output -raw redis_endpoint',
+                        script: 'terraform  output -raw redis_endpoint',
                         returnStdout: true
                     ).trim()
 
 
 
                     RDS_HOSTNAME = sh(
-                        script: 'terraform -chdir=./terraform output -raw mysql_endpoint | cut -d ":" -f1',
+                        script: 'terraform  output -raw mysql_endpoint | cut -d ":" -f1',
                         returnStdout: true
                     ).trim()
 
                     NODE_APP_IP = sh(
-                        script: 'terraform -chdir=./terraform output -raw node_app_ip',
+                        script: 'terraform output -raw node_app_ip',
                         returnStdout: true
                     ).trim()
 
@@ -103,6 +104,7 @@ pipeline {
 
                 }
             }
+        }
         }
 
         // STAGE 3: Login to ECR, Build & Push Docker Image
