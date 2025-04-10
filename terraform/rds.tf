@@ -47,7 +47,7 @@ resource "aws_db_instance" "mysql_rds" {
   allocated_storage      = 20             # Max for Free Tier (GB)
   storage_type           = "gp2"
   db_name                = "mydatabase"   # Replace with your DB name
-  username               = "admin"        # Replace with your username
+  username               = var.db_username        # Replace with your username
   password               = var.db_password
   skip_final_snapshot    = true           # For dev (set to false in prod)
   publicly_accessible    = false
