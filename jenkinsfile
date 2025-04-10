@@ -108,24 +108,24 @@ pipeline {
         }
 
         // // STAGE 3: Login to ECR, Build & Push Docker Image
-        // stage('Build and Push Docker Image') {
-        //     steps {
-        //         dir('nodeapp') {  // Changes directory to terraform/
-        //         script {
-        //             // Login to AWS ECR
-        //             echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
+        stage('Build and Push Docker Image') {
+            steps {
+                dir('nodeapp') {  // Changes directory to terraform/
+                script {
+                    // Login to AWS ECR
+                    echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
 
-        //             sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
+                    sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
 
-        //             // Build Docker image
-        //             sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} ."
+                    // Build Docker image
+                    sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} ."
 
-        //             // Push to ECR
-        //             sh "sudo docker push ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
-        //         }
-        //     }
-        // }
-        // }
+                    // Push to ECR
+                    sh "sudo docker push ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
+                }
+            }
+        }
+        }
 
         stage('Prepare Inventory') {
             steps {
@@ -154,6 +154,21 @@ server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu"""
             }
         }
     }
+
+    stage('print load balancer DNS') {
+            steps {
+                dir('terraform') {  // Changes directory to terraform/
+                script {
+                    LB_DNS = sh(
+                        script: 'terraform output -raw lb_url',
+                        returnStdout: true
+                    ).trim()
+                    echo "Load Balancer DNS: ${LB_DNS}"
+
+                }
+            }
+        }
+        }
     }
 
     post {

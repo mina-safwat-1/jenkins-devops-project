@@ -19,7 +19,7 @@ app.get("/db", (req, res) => {
       console.error('Database connection failed: ' + err.stack);
       return;
     }
-    res.send("db connection successful");
+    res.send("db connection successful finished pipeline");
     console.log('Connected to database.');
     connection.release(); // release back to the pool
   });

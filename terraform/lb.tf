@@ -13,3 +13,7 @@ resource "aws_lb" "test" {
 
 }
 
+
+output "lb_url" {
+  value = "http://${aws_lb.test.dns_name}"
+}
