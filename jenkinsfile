@@ -62,7 +62,6 @@ pipeline {
                     // Fetch ECR repository URL from Terraform output
                     REGISTRY = sh(
                         script: 'terraform  output -raw aws_ecr_repository | cut -d'.' -f1',
-                        returnStdout: true
                     ).trim()
                     
                     // Fetch ECR repository name from Terraform output
