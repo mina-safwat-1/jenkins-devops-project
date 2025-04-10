@@ -114,10 +114,7 @@ pipeline {
                     // Login to AWS ECR
                     echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
 
-                    sh '''
-                        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | \
-                        docker login --username AWS --password-stdin ${env.REGISTRY}
-                    '''
+                    sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${env.REGISTRY}"
 
                     // Build Docker image
                     sh "docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} node_app/"
