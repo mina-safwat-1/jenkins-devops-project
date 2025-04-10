@@ -127,10 +127,18 @@
         name: terraform
         state: present
 
-    - name: Install Ansible (Debian/Ubuntu)
+
+    - name: Install Python3 pip (Debian/Ubuntu)
       ansible.builtin.apt:
+        name: python3-pip
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install Ansible via pip3
+      ansible.builtin.pip:
         name: ansible
         state: present
+        executable: pip3  # Explicitly use pip3 to target Python3
       when: ansible_facts['os_family'] == 'Debian'
 
 
