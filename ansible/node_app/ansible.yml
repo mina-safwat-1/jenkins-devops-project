@@ -4,6 +4,12 @@
   become: yes
   gather_facts: yes
 
+  vars:
+    REGISTRY: "{{ registry_var | default('docker.io') }}"
+    REPOSITORY: "{{ repository_var | default('library/nginx') }}"
+    IMAGE: "{{ image_var | default('latest') }}"
+
+
   tasks:
     # Docker installation tasks
     - name: Install required system packages for Docker
@@ -85,4 +91,23 @@
         state: absent
       ignore_errors: yes
 
-  
+    - name: Stop the container if it exists
+      command: "sudo docker stop myappcontainer"
+      ignore_errors: yes
+      register: stop_container
+      changed_when: "'No such container' not in stop_container.stderr"
+
+    - name: Remove the container if it exists
+      command: "sudo docker rm myappcontainer"
+      ignore_errors: yes
+      register: remove_container
+      changed_when: "'No such container' not in remove_container.stderr"
+
+    - name: Pull the latest image
+      command: "sudo docker pull {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE }}"
+      register: pull_result
+      changed_when: "'Downloaded newer image' in pull_result.stdout"
+
+    - name: Run the container
+      command: "sudo docker run -d --name myappcontainer -p 80:8080 {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE }}"
+      when: pull_result is changed or stop_container is changed or remove_container is changed

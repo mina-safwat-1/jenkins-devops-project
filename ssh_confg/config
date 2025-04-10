@@ -46,3 +46,8 @@ sudo docker run -d -p 80:3000 \
   -e RDS_PASSWORD=postgres \
   -e RDS_PORT=3306 \
   214797541313.dkr.ecr.us-east-1.amazonaws.com/node-app-jenkins:latest
+
+
+
+
+ansible-playbook playbook.yml -e "registry_var=myreg.example.com repository_var=myapp image_var=v1.2.3"

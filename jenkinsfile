@@ -1,0 +1,81 @@
+pipeline {
+    agent {
+        label 'private-slave'  // Change to your Jenkins agent label
+    }
+    
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_DEFAULT_REGION    = 'us-east-1'  // Change to your region
+        REPO_URL              = 'https://github.com/your-repo/your-app.git'
+        ECR_REPO             = 'your-account-id.dkr.ecr.us-east-1.amazonaws.com/your-app'
+        DOCKER_IMAGE_TAG     = 'latest'
+        ANSIBLE_INVENTORY    = 'inventory.ini'  // Path to your Ansible inventory
+    }
+
+    stages {
+        // STAGE 1: Clone the Git repository
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: "${REPO_URL}"
+            }
+        }
+
+        // STAGE 2: Terraform (init & apply)
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {  // Assuming Terraform files are in a 'terraform' directory
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+        // STAGE 3: Login to ECR, Build & Push Docker Image
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    // Login to AWS ECR
+                    sh '''
+                        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | \
+                        docker login --username AWS --password-stdin ${ECR_REPO}
+                    '''
+
+                    // Build Docker image
+                    sh "docker build -t ${ECR_REPO}:${DOCKER_IMAGE_TAG} ."
+
+                    // Push to ECR
+                    sh "docker push ${ECR_REPO}:${DOCKER_IMAGE_TAG}"
+                }
+            }
+        }
+
+        // STAGE 4: Run Ansible Playbook on Application Node
+        stage('Deploy with Ansible') {
+            steps {
+                script {
+                    // Install Ansible if not present (adjust based on Jenkins agent)
+                    sh 'pip install ansible || sudo apt-get install -y ansible'
+
+                    // Run Ansible playbook
+                    sh "ansible-playbook -i ${ANSIBLE_INVENTORY} deploy.yml --extra-vars 'image=${ECR_REPO}:${DOCKER_IMAGE_TAG}'"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up workspace (optional)
+            cleanWs()
+        }
+        failure {
+            // Notify on failure (Slack, Email, etc.)
+            echo 'Pipeline failed!'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+    }
+}
