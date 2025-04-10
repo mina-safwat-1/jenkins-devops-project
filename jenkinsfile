@@ -152,7 +152,7 @@ pipeline {
                 dir('ansible/node_app') {  // Changes directory to terraform/
                 script {
                     // Run Ansible playbook
-                    sh "ansible-playbook -i  ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
+                    sh "ansible-playbook ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
                 }
             }
         }
