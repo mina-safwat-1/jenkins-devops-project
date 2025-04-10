@@ -5,10 +5,13 @@
   gather_facts: yes
 
   vars:
-    REGISTRY: "{{ registry_var | default('docker.io') }}"
-    REPOSITORY: "{{ repository_var | default('library/nginx') }}"
+    REGISTRY: "{{ REGISTRY }}"
+    REPOSITORY: "{{ REPOSITORY }}"
     IMAGE: "{{ image_var | default('latest') }}"
-
+    RDS_HOSTNAME: "{{ RDS_HOSTNAME }}"
+    RDS_PASSWORD: "{{ RDS_PASSWORD }}"
+    RDS_USERNAME: "{{ RDS_USERNAME }}"
+    REDIS_HOSTNAME: "{{ REDIS_HOSTNAME }}"
 
   tasks:
     # Docker installation tasks
@@ -92,13 +95,13 @@
       ignore_errors: yes
 
     - name: Stop the container if it exists
-      command: "sudo docker stop myappcontainer"
+      command: "sudo docker stop nodeapp"
       ignore_errors: yes
       register: stop_container
       changed_when: "'No such container' not in stop_container.stderr"
 
     - name: Remove the container if it exists
-      command: "sudo docker rm myappcontainer"
+      command: "sudo docker rm nodeapp"
       ignore_errors: yes
       register: remove_container
       changed_when: "'No such container' not in remove_container.stderr"
@@ -108,6 +111,14 @@
       register: pull_result
       changed_when: "'Downloaded newer image' in pull_result.stdout"
 
-    - name: Run the container
-      command: "sudo docker run -d --name myappcontainer -p 80:8080 {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE }}"
-      when: pull_result is changed or stop_container is changed or remove_container is changed
+- name: Run the container
+  command: >
+    sudo docker run -d --name nodeapp -p 80:3000
+    -e REDIS_HOSTNAME={{ REDIS_HOSTNAME }}
+    -e REDIS_PORT=6379
+    -e RDS_HOSTNAME={{ RDS_HOSTNAME }}
+    -e RDS_USERNAME={{ RDS_USERNAME }}
+    -e RDS_PASSWORD={{ RDS_PASSWORD }}
+    -e RDS_PORT=3306
+    {{ REGISTRY }}/{{ REPOSITORY }}:{{ IMAGE_TAG }}
+  when: pull_result is changed or stop_container is changed or remove_container is changed

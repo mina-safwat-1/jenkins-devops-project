@@ -49,5 +49,4 @@ sudo docker run -d -p 80:3000 \
 
 
 
-
 ansible-playbook playbook.yml -e "registry_var=myreg.example.com repository_var=myapp image_var=v1.2.3"
