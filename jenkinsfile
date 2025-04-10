@@ -107,28 +107,30 @@ pipeline {
         }
         }
 
-        // STAGE 3: Login to ECR, Build & Push Docker Image
-        stage('Build and Push Docker Image') {
-            steps {
-                dir('nodeapp') {  // Changes directory to terraform/
-                script {
-                    // Login to AWS ECR
-                    echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
+        // // STAGE 3: Login to ECR, Build & Push Docker Image
+        // stage('Build and Push Docker Image') {
+        //     steps {
+        //         dir('nodeapp') {  // Changes directory to terraform/
+        //         script {
+        //             // Login to AWS ECR
+        //             echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
 
-                    sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
+        //             sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
 
-                    // Build Docker image
-                    sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} ."
+        //             // Build Docker image
+        //             sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} ."
 
-                    // Push to ECR
-                    sh "sudo docker push ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
-                }
-            }
-        }
-        }
+        //             // Push to ECR
+        //             sh "sudo docker push ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
+        //         }
+        //     }
+        // }
+        // }
 
         stage('Prepare Inventory') {
             steps {
+                dir('ansible/node_app') {  // Changes directory to terraform/
+
                 script {
                     def inventoryContent = """
                     [ubuntu_servers]
@@ -136,11 +138,12 @@ pipeline {
                     """
                     
                     writeFile(
-                        file: 'ansible/node_app/hosts.ini',
+                        file: 'hosts.ini',
                         text: inventoryContent
                     )
                 }
             }
+        }
         }
 
         // STAGE 4: Run Ansible Playbook on Application Node
@@ -149,7 +152,7 @@ pipeline {
                 dir('ansible/node_app') {  // Changes directory to terraform/
                 script {
                     // Run Ansible playbook
-                    sh "ansible-playbook ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
+                    sh "ansible-playbook -i  ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
                 }
             }
         }
@@ -159,7 +162,7 @@ pipeline {
     post {
         always {
             // Clean up workspace (optional)
-            cleanWs()
+            // cleanWs()
             sh """
             rm -f ~/.ssh/private.pem
             """
