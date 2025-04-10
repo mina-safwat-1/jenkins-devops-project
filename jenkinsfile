@@ -5,8 +5,8 @@ pipeline {
     
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
         AWS_DEFAULT_REGION    = 'us-east-1'  // Change to your region
         REPO_URL              = 'https://github.com/mina-safwat-1/jenkins-devops-project'
         DOCKER_IMAGE_TAG     = 'latest'
