@@ -145,8 +145,8 @@ pipeline {
 
         // STAGE 4: Run Ansible Playbook on Application Node
         stage('Deploy with Ansible') {
-            dir('ansible/node_app') {  // Changes directory to terraform/
             steps {
+                dir('ansible/node_app') {  // Changes directory to terraform/
                 script {
                     // Run Ansible playbook
                     sh "ansible-playbook ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
