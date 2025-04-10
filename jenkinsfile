@@ -110,6 +110,7 @@ pipeline {
         // STAGE 3: Login to ECR, Build & Push Docker Image
         stage('Build and Push Docker Image') {
             steps {
+                dir('node_app') {  // Changes directory to terraform/
                 script {
                     // Login to AWS ECR
                     echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
@@ -117,12 +118,13 @@ pipeline {
                     sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
 
                     // Build Docker image
-                    sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} node_app/"
+                    sh "sudo docker build -t ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG} ."
 
                     // Push to ECR
                     sh "sudo docker push ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
                 }
             }
+        }
         }
 
         stage('Prepare Inventory') {
@@ -143,13 +145,15 @@ pipeline {
 
         // STAGE 4: Run Ansible Playbook on Application Node
         stage('Deploy with Ansible') {
+            dir('ansible/node_app') {  // Changes directory to terraform/
             steps {
                 script {
                     // Run Ansible playbook
-                    sh "ansible-playbook -i ${ANSIBLE_INVENTORY} ansible/node_app/ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
+                    sh "ansible-playbook ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
                 }
             }
         }
+    }
     }
 
     post {
