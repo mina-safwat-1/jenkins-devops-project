@@ -82,6 +82,7 @@
       args:
         creates: /usr/local/bin/aws
 
+
     - name: Clean up AWS CLI installation files
       ansible.builtin.file:
         path: /tmp/awscliv2.zip
