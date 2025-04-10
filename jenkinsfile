@@ -89,12 +89,17 @@ pipeline {
                     ).trim()
 
 
-
                     env.REDIS_HOSTNAME = REDIS_HOSTNAME
                     env.RDS_HOSTNAME = RDS_HOSTNAME
                     env.NODE_APP_IP = NODE_APP_IP
                     env.REPOSITORY = REPOSITORY
                     env.REGISTRY = REGISTRY
+
+                    echo "ECR Registry: ${env.REGISTRY}"
+                    echo "ECR Repository: ${env.REPOSITORY}"
+                    echo "Redis Host: ${env.REDIS_HOSTNAME}"
+                    echo "RDS Host: ${env.RDS_HOSTNAME}"
+                    echo "Node App IP: ${env.NODE_APP_IP}"
 
                 }
             }
