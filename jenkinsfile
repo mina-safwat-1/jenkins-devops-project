@@ -132,8 +132,7 @@ pipeline {
                 dir('ansible/node_app') {
                     script {
                         def inventoryContent = """[ubuntu_servers]
-        server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu
-        """
+server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu"""
 
                         writeFile(
                             file: 'hosts.ini',
@@ -150,7 +149,7 @@ pipeline {
                 dir('ansible/node_app') {  // Changes directory to terraform/
                 script {
                     // Run Ansible playbook
-                    sh "ansible-playbook --config ansible.cfg -i hosts.ini  ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
+                    sh "ansible-playbook -i hosts.ini  ansible.yml --extra-vars 'REGISTRY=${env.REGISTRY} REPOSITORY=${env.REPOSITORY} RDS_USERNAME=${DB_USERNAME} RDS_PASSWORD=${DB_PASSWORD} REDIS_HOSTNAME=${env.REDIS_HOSTNAME} RDS_HOSTNAME=${env.RDS_HOSTNAME}' "
                 }
             }
         }
