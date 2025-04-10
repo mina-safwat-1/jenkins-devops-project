@@ -5,8 +5,8 @@ pipeline {
     
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_DEFAULT_REGION    = 'us-east-1'  // Change to your region
         REPO_URL              = 'https://github.com/mina-safwat-1/jenkins-devops-project'
         DOCKER_IMAGE_TAG     = 'latest'
@@ -16,7 +16,7 @@ pipeline {
     }
 
     options {
-        skipDefaultCheckout(true)  // Disables automatic SCM checkout
+        skipDefaultCheckout(false)  // Disables automatic SCM checkout
         timeout(time: 30, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
@@ -42,20 +42,16 @@ pipeline {
             }
         }
 
-        // STAGE 1: Clone the Git repository
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: "${REPO_URL}"
-            }
-        }
-
         // STAGE 2: Terraform (init & apply)
         stage('Terraform Apply') {
+
+            dir('terraform') {  // Changes directory to terraform/
             steps {
                 dir('terraform') {  // Assuming Terraform files are in a 'terraform' directory
-                    sh 'terraform -chdir=./terraform init'
-                    sh 'terraform -chdir=./terraform apply -var-file vars.tfvars -var "db_password=${DB_PASSWORD}"  -auto-approve'
+                    sh 'terraform  init'
+                    sh 'terraform  apply -var-file vars.tfvars -var "db_password=${DB_PASSWORD}"  -auto-approve'
                 }
+            }
             }
         }
 
