@@ -190,15 +190,19 @@ Go to **Jenkins > Manage Credentials**, then add:
 ## ⚙️ Jenkins Pipeline Configuration
 
 1. **Create a pipeline job**  
+
    ![create_pipeline_1](images/create_pipeline_1.png)
 
-2. **Add trigger via webhook**  
+2. **Add trigger via webhook** 
+
    ![create_pipeline_2](images/pipeline_trigger_hook.png)
 
 3. **Select the `main` branch**  
+
    ![create_pipeline_3](images/create_pipeline_2.png)
 
 4. **Add a Jenkinsfile script** for build, test, and deployment  
+
    ![create_pipeline_4](images/create_pipeline_3.png)
 
 ---
