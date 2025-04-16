@@ -46,7 +46,6 @@ resource "aws_elasticache_cluster" "free_tier_redis" {
   security_group_ids   = [aws_security_group.cache_sg.id]
   subnet_group_name    = aws_elasticache_subnet_group.free_tier_cache.name
 
-  # transit_encryption_enabled             = true
   # Free-tier optimized settings
   snapshot_retention_limit = 0 # Disable automatic backups
   maintenance_window       = "mon:00:00-mon:03:00"

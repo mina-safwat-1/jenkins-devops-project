@@ -8,7 +8,6 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_DEFAULT_REGION    = 'us-east-1'  // Change to your region
-        REPO_URL              = 'https://github.com/mina-safwat-1/jenkins-devops-project'
         DOCKER_IMAGE_TAG     = 'latest'
         ANSIBLE_INVENTORY    = 'ansible/node_app/inventory.ini'  // Path to your Ansible inventory
         DB_PASSWORD        = credentials('DB_PASSWORD')  // Assuming you have a Jenkins credential for DB password
@@ -16,14 +15,15 @@ pipeline {
     }
 
     options {
-        skipDefaultCheckout(false)  // Disables automatic SCM checkout
+        skipDefaultCheckout(false)  // enable automatic SCM checkout
         timeout(time: 30, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
 
     stages {
-
+        
+        // stage 1 : setup ssh key in jenkins slave
         stage('Setup SSH Key') {
             steps {
                 withCredentials([sshUserPrivateKey(
@@ -54,12 +54,12 @@ pipeline {
             }
 }
 
-
-        stage('Get ECR URL and Repo Name') {
+        // STAGE 3: Get terraform output and set environment variables
+        stage('Get terraform output') {
             steps {
                 dir('terraform') {  // Changes directory to terraform/
                 script {
-                    // Fetch ECR repository URL from Terraform output
+                    // Fetch ECR registry URL from Terraform output
                     REGISTRY = sh(
                         script: 'terraform  output -raw aws_ecr_repository | cut -d "/" -f1',
                         returnStdout: true
@@ -71,50 +71,50 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-
+                    // Fetch Redis from Terraform output
                     REDIS_HOSTNAME = sh(
                         script: 'terraform  output -raw redis_endpoint',
                         returnStdout: true
                     ).trim()
 
-
-
+                    // Fetch RDS from Terraform output
                     RDS_HOSTNAME = sh(
                         script: 'terraform  output -raw mysql_endpoint | cut -d ":" -f1',
                         returnStdout: true
                     ).trim()
 
+                    // Fetch Node App IP from Terraform output
                     NODE_APP_IP = sh(
                         script: 'terraform output -raw node_app_ip',
                         returnStdout: true
                     ).trim()
 
-
+                    
+                    // Set environment variables
                     env.REDIS_HOSTNAME = REDIS_HOSTNAME
                     env.RDS_HOSTNAME = RDS_HOSTNAME
                     env.NODE_APP_IP = NODE_APP_IP
                     env.REPOSITORY = REPOSITORY
                     env.REGISTRY = REGISTRY
 
-                    echo "ECR Registry: ${env.REGISTRY}"
-                    echo "ECR Repository: ${env.REPOSITORY}"
-                    echo "Redis Host: ${env.REDIS_HOSTNAME}"
-                    echo "RDS Host: ${env.RDS_HOSTNAME}"
-                    echo "Node App IP: ${env.NODE_APP_IP}"
+                    // debug
+                    // echo "ECR Registry: ${env.REGISTRY}"
+                    // echo "ECR Repository: ${env.REPOSITORY}"
+                    // echo "Redis Host: ${env.REDIS_HOSTNAME}"
+                    // echo "RDS Host: ${env.RDS_HOSTNAME}"
+                    // echo "Node App IP: ${env.NODE_APP_IP}"
 
                 }
             }
         }
         }
 
-        // // STAGE 3: Login to ECR, Build & Push Docker Image
+        // STAGE 4: Login to ECR, Build & Push Docker Image
         stage('Build and Push Docker Image') {
             steps {
                 dir('nodeapp') {  // Changes directory to terraform/
                 script {
                     // Login to AWS ECR
-                    echo "Building Docker image for ${env.REGISTRY}/${env.REPOSITORY}:${DOCKER_IMAGE_TAG}"
-
                     sh  "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | sudo docker login --username AWS --password-stdin ${env.REGISTRY}"
 
                     // Build Docker image
@@ -127,6 +127,7 @@ pipeline {
         }
         }
 
+        // STAGE 5: Prepare Ansible Inventory
         stage('Prepare Inventory') {
             steps {
                 dir('ansible/node_app') {
@@ -143,7 +144,7 @@ server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu"""
             }
         }
 
-        // STAGE 4: Run Ansible Playbook on Application Node
+        // STAGE 6: Run Ansible Playbook on Application Node
         stage('Deploy with Ansible') {
             steps {
                 dir('ansible/node_app') {  // Changes directory to terraform/
@@ -155,6 +156,7 @@ server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu"""
         }
     }
 
+    // STAGE 7: print load balancer DNS
     stage('print load balancer DNS') {
             steps {
                 dir('terraform') {  // Changes directory to terraform/
@@ -174,7 +176,7 @@ server1 ansible_host=${env.NODE_APP_IP} ansible_user=ubuntu"""
     post {
         always {
             // Clean up workspace (optional)
-            // cleanWs()
+            cleanWs()
             sh """
             rm -f ~/.ssh/private.pem
             """
