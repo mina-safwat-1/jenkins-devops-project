@@ -28,7 +28,7 @@ resource "aws_instance" "bastion" {
 
   vpc_security_group_ids      = [aws_security_group.public_sg.id]
   associate_public_ip_address = true
-  key_name                    = "new" # Replace with your key pair
+  key_name                    = aws_key_pair.my_key.key_name # Replace with your key pair
 
   tags = {
     Name = "bastion-host"
@@ -46,7 +46,8 @@ resource "aws_instance" "node_app" {
   ][0]
 
   vpc_security_group_ids = [aws_security_group.private_sg.id]
-  key_name               = "new" # Replace with your key pair
+  key_name                    = aws_key_pair.my_key.key_name # Replace with your key pair
+
   iam_instance_profile = aws_iam_instance_profile.ecr_access_profile.name
 
   tags = {
@@ -64,7 +65,7 @@ resource "aws_instance" "jenkins_slave" {
   ][0]
 
   vpc_security_group_ids = [aws_security_group.private_sg.id]
-  key_name               = "new" # Replace with your key pair
+  key_name                    = aws_key_pair.my_key.key_name # Replace with your key pair
   iam_instance_profile = aws_iam_instance_profile.ecr_access_profile.name
 
   tags = {

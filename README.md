@@ -15,7 +15,12 @@
 
 fork repo
 
+
 cd terraform
+ssh-keygen -t rsa -b 4096 -f my-aws-key -N ""
+chmod 400 my-aws-key
+cp my-aws-key ~/.ssh/my-aws-key
+
 
 terraform init
 terraform apply -var-file vars.tfvars
@@ -31,12 +36,12 @@ docker container run -d -v jenkins_home:/var/jenkins_home -p 8080:8080 jenkins/j
 echo "Host bastion
   HostName public_ip_bastion  
   User ubuntu
-  IdentityFile ~/.ssh/new.pem
+  IdentityFile ~/.ssh/my-aws-key
 
 Host jenkins-slave
   HostName private_ip_jenkins_slave
   User ubuntu
-  IdentityFile ~/.ssh/new.pem
+  IdentityFile ~/.ssh/my-aws-key
   ProxyJump bastion
 " > ~/.ssh/config 
 
@@ -72,9 +77,14 @@ DB_PASSWORD
 DB_USERNAME
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
-ansible-ssh-key (your own private key) 
+ansible-ssh-key (copy this file /terraform/my-aws-key) 
 
 
 # add jenkins pipeline
 
 # push change to github repo
+
+
+# check dns of load balancer
+http://jenkins-app-lb-429351836.us-east-1.elb.amazonaws.com/redis
+http://jenkins-app-lb-429351836.us-east-1.elb.amazonaws.com/db
